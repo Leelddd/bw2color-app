@@ -17,10 +17,6 @@
     </h1>
 </div>
 
-<ul class="nav nav-tabs" contenteditable="true">
-    <li id="basic-li" class="active" onclick="tab('basic')"><a href="#">基础上色</a></li>
-    <li id="train-li" class="" onclick="tab('train')"><a href="#">漫画上色</a></li>
-</ul>
 
 <br>
 <div>
@@ -119,6 +115,7 @@
                 if (index++ > 9) {
                     document.getElementById('basic-result').src = '../static/result/' + data
                     $('#loader').css('display', 'none')
+                    $('#basic-result').css('filter', 'none')
                     return;
                 }
                 loader.setValue(index / 10);
