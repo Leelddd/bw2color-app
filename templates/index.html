@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/twitter-bootstrap/3.3.6/js/bootstrap.js"></script>
+    <script src="/static/loader.js"></script>
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/3.3.6/css/bootstrap.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/3.3.6/css/bootstrap-theme.css" rel="stylesheet">
+</head>
+<body style="padding: 0 5% 0 5%;">
+
+<div class="page-header" contenteditable="true">
+    <h1>Niconico Colorization
+        <small> 漫画图片上色</small>
+    </h1>
+</div>
+
+<ul class="nav nav-tabs" contenteditable="true">
+    <li id="basic-li" class="active" onclick="tab('basic')"><a href="#">基础上色</a></li>
+    <li id="train-li" class="" onclick="tab('train')"><a href="#">漫画上色</a></li>
+</ul>
+
+<br>
+<div>
+
+    <div id="basic">
+
+        <div class="panel panel-default" style="float:left; width:50%; height:500px">
+            <div class="panel-heading">
+                <h3 class="panel-title"> 尝试一下~ </h3>
+            </div>
+            <div style="display: inline;">
+            </div>
+            <div class="panel-body">
+                <label>
+                    选择数据集：
+                    <select id="dataset">
+                        <option value="1"> 默认数据集</option>
+                        <option value="2"> 海贼王数据集</option>
+                    </select>
+                </label>
+                <br>
+                <form id="fileinfo" enctype="multipart/form-data" method="post" name="fileinfo">
+                    <label style="display: inline;"> 上传图片: </label>
+                    <input style="display: inline;" type="file" name="file"
+                           onchange="showPreview(this, 'basic-update')"/>
+                </form>
+
+
+                <div class="row-fluid" style="margin-top: 50px">
+                    <div class="span4" style="float: left;margin-left: 20%">
+                        <img class="image img-rounded" src="../static/upload.jpg" id="basic-update"/>
+                    </div>
+                    <div class="span4" style="float: right;margin-right: 20%">
+                        <img class="image img-rounded" src="../static/upload.jpg" id="basic-result"/>
+                        <div id="loader" class="loader" style="display: none;">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped">
+                                    <div class="progress-value"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="clear: both;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default" style="float:right; width:45%">
+            <div class="panel-heading">
+                <h3 class="panel-title"> 一些效果展示~ (左->右：灰度图 / 生成图 / 原图 </h3>
+            </div>
+            <div class="panel-body">
+                <div class="row-fluid">
+                    <div class="show">
+                        <img height="128" src="../static/basic/1.png" class="img-rounded"/>
+                    </div>
+                    <div class="show">
+                        <img height="128" src="../static/basic/2.png" class="img-rounded"/>
+                    </div>
+                    <div class="show">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="train" style="display: none;">
+        test
+    </div>
+
+</div>
+
+</body>
+<script>
+    function tab(panelId) {
+        from = 'basic'
+        if (panelId == 'basic') from = 'train'
+        li = document.getElementById(panelId + '-li')
+        if (li.className === 'active') return;
+        li.setAttribute('class', 'active')
+        document.getElementById(from + '-li').setAttribute('class', '')
+        $('#' + from).css('display', 'none')
+        $('#' + panelId).css('display', 'block')
+    }
+
+    function upload_img() {
+        index = 0;
+
+        var loader = new Loader('#loader', {
+            onComplete: function () {
+                console.log('loading effect finish!');
+            }
+        });
+
+        function f(data) {
+            setTimeout(function () {
+                if (index++ > 9) {
+                    document.getElementById('basic-result').src = '../static/result/' + data
+                    $('#loader').css('display', 'none')
+                    return;
+                }
+                loader.setValue(index / 10);
+                f(data)
+            }, 500)
+        }
+
+
+        var fd = new FormData($("#fileinfo")[0]);
+        //fd.append("CustomField", "This is some extra data");
+        $.ajax({
+            url: '/upload/image?dataset=' + $('#dataset').val(),
+            type: 'POST',
+            data: fd,
+            success: function (data) {
+                f(data);
+            },
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+    }
+
+    function showPreview(source, imgId) {
+        upload_img()
+        $('#basic-update').css('display', 'block');
+        $('#basic-result').css('display', 'block');
+        $('#loader').css('display', 'block')
+        var file = source.files[0];
+        if (window.FileReader) {
+            var fr = new FileReader();
+            fr.onloadend = function (e) {
+                document.getElementById(imgId).src = e.target.result;
+                document.getElementById('basic-result').src = e.target.result;
+            };
+            fr.readAsDataURL(file);
+        }
+    }
+
+
+</script>
+<style>
+    body {
+        font-family: "Microsoft YaHei UI", serif;
+    }
+
+    .show {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .image {
+        width: 200px;
+        height: 200px;
+        display: none;
+    }
+
+    a:hover {
+        cursor: pointer;
+    }
+
+    #basic-result {
+        filter: blur(2px);
+    }
+</style>
+</html>
